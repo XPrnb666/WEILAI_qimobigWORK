@@ -1,0 +1,11 @@
+{
+  "title": "QuickTask",
+  "description": "一个简洁的个人待办事项应用，支持任务的新增、编辑、完成、删除、筛选与搜索，数据保存在本地浏览器。",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
