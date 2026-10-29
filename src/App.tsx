@@ -551,6 +551,14 @@ export default function App() {
   const [dueDate, setDueDate] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // 点击页面其他位置时收起任务操作菜单
+  useEffect(() => {
+    if (openMenuId === null) return
+    const close = () => setOpenMenuId(null)
+    document.addEventListener("click", close)
+    return () => document.removeEventListener("click", close)
+  }, [openMenuId])
+
   // --- 启动：检查 Token → 获取用户 → 加载任务 ---
   useEffect(() => {
     const bootstrap = async () => {
