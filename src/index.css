@@ -509,6 +509,26 @@ h1 {
   gap: 5px;
 }
 
+/* 逾期状态 */
+.task-row.overdue .date {
+  color: #b4472f;
+}
+
+.overdue-tag {
+  font-style: normal;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #b4472f;
+  background: #fbe7e2;
+}
+
+.calendar-cell.has-overdue .calendar-cell-count {
+  color: #b4472f;
+  background: #fbe7e2;
+}
+
 .menu-wrap {
   position: relative;
 }
@@ -1422,6 +1442,11 @@ h1 {
   background: var(--green-100);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.calendar-task-badge.overdue {
+  color: #b4472f;
+  background: #fbe7e2;
 }
 
 .calendar-task-badge.done {

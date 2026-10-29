@@ -308,12 +308,15 @@ function CalendarView({
           const isSelected = cell.ymd === selectedYMD
           const allDone =
             dayTasks.length > 0 && dayTasks.every((t) => t.completed)
+          const hasOverdue =
+            cell.ymd < today && dayTasks.some((t) => !t.completed)
           const cls = [
             "calendar-cell",
             cell.inMonth ? "in-month" : "out-month",
             isToday ? "is-today" : "",
             isSelected ? "is-selected" : "",
             allDone ? "is-done-day" : "",
+            hasOverdue ? "has-overdue" : "",
           ].filter(Boolean).join(" ")
           return (
             <button
@@ -374,8 +377,16 @@ function CalendarView({
                   <span className="calendar-task-cat" style={{ background: tone.bg, color: tone.ink }}>
                     {t.category}
                   </span>
-                  <span className={t.completed ? "calendar-task-badge done" : "calendar-task-badge"}>
-                    {t.completed ? "已完成" : "待完成"}
+                  <span
+                    className={
+                      t.completed
+                        ? "calendar-task-badge done"
+                        : isOverdue(t)
+                          ? "calendar-task-badge overdue"
+                          : "calendar-task-badge"
+                    }
+                  >
+                    {t.completed ? "已完成" : isOverdue(t) ? "已逾期" : "待完成"}
                   </span>
                 </li>
               )
@@ -469,6 +480,12 @@ function formatDate(value: string | null | undefined) {
     day: "numeric",
     weekday: "short",
   }).format(date)
+}
+
+// 未完成且截止日期早于今天 → 逾期
+function isOverdue(task: Task) {
+  if (task.completed || !task.dueDate) return false
+  return task.dueDate < todayYMD()
 }
 
 function addDays(days: number) {
@@ -1025,7 +1042,7 @@ export default function App() {
             {filteredTasks.length > 0 ? (
               filteredTasks.map((task) => (
                 <article
-                  className={`task-row ${task.completed ? "completed" : ""}`}
+                  className={`task-row ${task.completed ? "completed" : ""} ${isOverdue(task) ? "overdue" : ""}`}
                   key={task.id}
                 >
                   <button
@@ -1048,9 +1065,10 @@ export default function App() {
                     <p className="task-title">{task.title}</p>
                     <div className="task-meta">
                       <span className="category">{task.category}</span>
-                      <span className="date">
+                      <span className={isOverdue(task) ? "date overdue" : "date"}>
                         <CalendarIcon />
                         {formatDate(task.dueDate)}
+                        {isOverdue(task) && <em className="overdue-tag">逾期</em>}
                       </span>
                     </div>
                   </div>
