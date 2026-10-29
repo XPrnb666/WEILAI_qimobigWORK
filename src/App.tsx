@@ -574,7 +574,7 @@ export default function App() {
                   <path d="M6.5 12.5l3.2 3.2L18 7.5" />
                 </Icon>
               </span>
-              <h1 className="auth-title">QuickTask</h1>
+              <h1 className="auth-title">QuickTasks</h1>
               <p className="auth-subtitle">用最少的操作，记录每天的待办</p>
             </div>
 
@@ -655,7 +655,7 @@ export default function App() {
                 <path d="M6.5 12.5l3.2 3.2L18 7.5" />
               </Icon>
             </span>
-            <span className="brand-name">QuickTask</span>
+            <span className="brand-name">QuickTasks</span>
           </div>
           <div className="user-area">
             <Avatar onClear={handleAvatarClear} onUpload={handleAvatarUpload} user={user!} />

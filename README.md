@@ -1,4 +1,4 @@
-# QuickTask
+# QuickTasks
 
 一个简洁的个人待办事项课程大作业，前后端分离架构。支持登录注册、任务的新增/编辑/完成/删除/筛选/搜索。
 
@@ -98,7 +98,7 @@ Authorization: Token <你的 token>
 ## 项目结构
 
 ```
-QuickTask/
+QuickTasks/
 ├── backend/                       Django 后端
 │   ├── manage.py
 │   ├── requirements.txt
