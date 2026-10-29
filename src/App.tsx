@@ -178,8 +178,12 @@ function weekdayLabel(ymd: string) {
 // 日历视图组件（内联，保持文件数量最少）
 function CalendarView({
   tasks,
+  onAddTask,
+  onEditTask,
 }: {
   tasks: Task[]
+  onAddTask?: (ymd: string) => void
+  onEditTask?: (task: Task) => void
 }) {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -356,14 +360,25 @@ function CalendarView({
         })}
       </div>
       <div className="calendar-selected-section">
-        <h3 className="calendar-selected-title">
-          {selectedYMD}（{weekdayLabel(selectedYMD)}）的任务
-          {selectedTasks.length > 0 && (
-            <span className="calendar-selected-count">
-              {selectedTasks.filter((t) => t.completed).length} / {selectedTasks.length} 已完成
-            </span>
+        <div className="calendar-selected-head">
+          <h3 className="calendar-selected-title">
+            {selectedYMD}（{weekdayLabel(selectedYMD)}）的任务
+            {selectedTasks.length > 0 && (
+              <span className="calendar-selected-count">
+                {selectedTasks.filter((t) => t.completed).length} / {selectedTasks.length} 已完成
+              </span>
+            )}
+          </h3>
+          {onAddTask && (
+            <button
+              className="calendar-add-btn"
+              onClick={() => onAddTask(selectedYMD)}
+              type="button"
+            >
+              ＋ 添加任务
+            </button>
           )}
-        </h3>
+        </div>
         {selectedTasks.length === 0 ? (
           <p className="calendar-empty">这一天没有待办</p>
         ) : (
@@ -377,6 +392,15 @@ function CalendarView({
                   <span className="calendar-task-cat" style={{ background: tone.bg, color: tone.ink }}>
                     {t.category}
                   </span>
+                  {onEditTask && (
+                    <button
+                      className="calendar-task-edit"
+                      onClick={() => onEditTask(t)}
+                      type="button"
+                    >
+                      编辑
+                    </button>
+                  )}
                   <span
                     className={
                       t.completed
@@ -743,6 +767,17 @@ export default function App() {
     setShowModalExamples(false)
   }
 
+  // 从日历某一天直接新建任务：日期预填，标题留空让用户输入
+  function openAddModalForDate(ymd: string) {
+    setEditingTask(null)
+    setTitle("")
+    setCategory("")
+    setDueDate(ymd)
+    setErrors({})
+    setShowModalExamples(false)
+    setIsAddOpen(true)
+  }
+
   function openEditModal(task: Task) {
     setIsAddOpen(false)
     setEditingTask(task)
@@ -1014,7 +1049,11 @@ export default function App() {
           </div>
 
           {viewMode === "calendar" ? (
-            <CalendarView tasks={tasks} />
+            <CalendarView
+              onAddTask={openAddModalForDate}
+              onEditTask={openEditModal}
+              tasks={tasks}
+            />
           ) : (
             <>
           <div className="search-bar">
