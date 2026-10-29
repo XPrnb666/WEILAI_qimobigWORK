@@ -104,7 +104,9 @@ QuickTask/
 │   ├── requirements.txt
 │   ├── init_admin.py              幂等 admin 初始化脚本
 │   ├── quicktask/                 Django 项目包（settings, urls, wsgi）
-│   └── tasks/                     Task App（模型、序列化器、视图、URL）
+│   ├── env.example                环境变量示例（SECRET_KEY / DEBUG / CORS）
+│   ├── tasks/                     Task App（模型、序列化器、视图、测试）
+│   └── users/                     用户头像上传 / 删除
 ├── src/                           React 前端
 │   ├── App.tsx                    主应用（登录 + 任务 CRUD + 乐观更新）
 │   ├── api.ts                     Django API 封装（authApi / taskApi）
@@ -123,13 +125,24 @@ QuickTask/
 
 ## 已知限制（课程作业场景）
 
-1. **没有前端测试**（没有 Vitest / Playwright / Cypress）
-2. **Token 不刷新**：一个用户永久一个 Token（TokenAuthentication 默认模式）
+1. **没有前端自动化测试**（未接入 Vitest / Playwright / Cypress；后端已有 21 条 Django 测试）
+2. **Token 不刷新**：一个用户一个长期 Token（TokenAuthentication 默认模式）
 3. **密码强度验证用 Django 默认**：生产环境应该加更严格的验证器
-4. **CORS 开发阶段允许所有来源**（`CORS_ALLOW_ALL_ORIGINS=True`）
+4. **安全配置走环境变量**：`DJANGO_SECRET_KEY`、`DJANGO_DEBUG`、`DJANGO_ALLOWED_HOSTS`、`CORS_ALLOW_ALL_ORIGINS` 未设置时回退到本地开发默认值，示例见 `backend/env.example`
 5. **数据库 SQLite**：并发写入有限，不适合多人同时写；生产环境应换 Postgres
 6. **没有批量操作 / 拖拽排序 / 提醒通知**（MVP 范围外）
 7. **搜索只匹配任务标题**（不搜索分类或描述）
+
+---
+
+## 测试
+
+```bash
+cd backend
+python manage.py test
+```
+
+当前覆盖：登录 / 注册 / 登出 / Token 校验、任务 CRUD 与多用户隔离、分类与状态过滤、头像上传的类型 / 大小 / 删除校验，共 21 条。
 
 ---
 
@@ -137,10 +150,8 @@ QuickTask/
 
 本项目通过 BMAD-Method v6.12.4 四阶段工作流开发。所有规划/构建/测试产物位于 `_bmad-output/`，每一次迭代的改动摘要、构建记录、测试结果均已归档。
 
-## Git 分支合并证据
+## Git 分支开发记录
 
-- 分支名：feature/branch-proof
-- 说明：每开发一个独立功能模块，创建 feature 分支，完成后 merge --no-ff 回 main
-"# WEILAI_qimobigWORK" 
-"# WEILAI_qimobigWORK" 
-"# WEILAI_qimobigWORK" 
+- 每个独立改动都在 `feature/<功能名>` 分支上完成
+- 完成后执行 `git merge --no-ff` 合回 `main`，保留可见的 merge 提交
+- 完整分支列表可用 `git branch -a` 查看
