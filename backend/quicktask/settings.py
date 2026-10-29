@@ -10,22 +10,39 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def env_bool(name: str, default: bool = False) -> bool:
+    """读取布尔型环境变量，未设置时回退到默认值。"""
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def env_list(name: str, default: str = "") -> list[str]:
+    """读取逗号分隔的列表型环境变量。"""
+    raw = os.environ.get(name, default)
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-*7&-fosp^-6e@0!yebyoj@s!!#7_o_tj*15lbl-uf)**em6$k7"
+# 安全相关配置全部走环境变量；课程本地开发不设置时使用下面的默认值。
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-dev-only-key-change-me-before-deploy",
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env_bool("DJANGO_DEBUG", True)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,*")
 
 
 # Application definition
@@ -140,8 +157,9 @@ REST_FRAMEWORK = {
 }
 
 
-# CORS
-CORS_ALLOW_ALL_ORIGINS = True  # 开发阶段允许所有；生产用 CORS_ALLOWED_ORIGINS
+# CORS：本地开发默认放开，部署时通过环境变量收紧
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", True)
+CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = False
 
 # Media（头像上传用）
