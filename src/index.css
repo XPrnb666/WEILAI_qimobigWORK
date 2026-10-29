@@ -1115,13 +1115,60 @@ h1 {
 }
 
 .calendar-header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .calendar-nav {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.calendar-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.calendar-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 56px;
+}
+
+.calendar-summary-item strong {
+  font-size: 18px;
+  font-weight: 650;
+  color: var(--green-700);
+  line-height: 1.2;
+}
+
+.calendar-summary-item span {
+  font-size: 11px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.calendar-progress {
+  height: 4px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.calendar-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green-700);
+  transition: width 200ms ease;
 }
 
 .calendar-nav-btn {
@@ -1187,21 +1234,23 @@ h1 {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
 }
 
 .calendar-cell {
-  aspect-ratio: 1 / 1;
+  min-height: 92px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
-  padding: 6px 2px;
+  gap: 4px;
+  padding: 6px;
+  text-align: left;
   border: 1px solid transparent;
   border-radius: 8px;
   background: var(--surface);
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease;
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
   position: relative;
 }
 
@@ -1228,21 +1277,60 @@ h1 {
   box-shadow: 0 0 0 2px rgba(52, 108, 81, 0.2);
 }
 
-.calendar-cell-day {
-  font-size: 13px;
-  font-weight: 500;
+.calendar-cell.is-done-day {
+  background: var(--green-50);
 }
 
-.calendar-cell-dot {
-  position: absolute;
-  bottom: 4px;
-  font-size: 9px;
-  color: var(--green-700);
+.calendar-cell-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.calendar-cell-day {
+  font-size: 12px;
   font-weight: 600;
 }
 
-.calendar-cell-dot:empty {
-  display: none;
+.calendar-cell-count {
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 999px;
+  color: var(--green-700);
+  background: var(--green-100);
+  font-weight: 600;
+}
+
+.calendar-cell-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.calendar-chip {
+  display: block;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.35;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-chip.done {
+  opacity: 0.65;
+  text-decoration: line-through;
+}
+
+.calendar-chip-more {
+  font-size: 9px;
+  color: var(--ink-faint);
+  padding-left: 5px;
 }
 
 .calendar-selected-section {
@@ -1258,6 +1346,16 @@ h1 {
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.calendar-selected-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-faint);
 }
 
 .calendar-empty {
@@ -1276,27 +1374,59 @@ h1 {
 }
 
 .calendar-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   color: var(--ink);
-  padding: 6px 10px;
+  padding: 8px 10px;
   background: var(--surface);
   border-radius: 6px;
-  border-left: 3px solid var(--green-700);
+  border: 1px solid var(--line);
 }
 
 .calendar-task.done {
-  text-decoration: line-through;
   color: var(--ink-faint);
-  border-left-color: var(--ink-faint);
+}
+
+.calendar-task.done .calendar-task-title {
+  text-decoration: line-through;
+}
+
+.calendar-task-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .calendar-task-title {
   font-weight: 500;
+  flex: 1;
+  min-width: 0;
 }
 
 .calendar-task-cat {
   font-size: 11px;
-  color: var(--ink-faint);
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.calendar-task-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--green-700);
+  background: var(--green-100);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.calendar-task-badge.done {
+  color: var(--ink-soft);
+  background: var(--canvas);
 }
 
 /* ============ 头像组件 ============ */
@@ -1479,6 +1609,29 @@ h1 {
     display: none;
   }
 
+  .calendar-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .calendar-summary {
+    gap: 14px;
+  }
+
+  .calendar-summary-item strong {
+    font-size: 16px;
+  }
+
+  .calendar-cell {
+    min-height: 74px;
+    padding: 4px;
+  }
+
+  .calendar-chip {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
   .mobile-add {
     position: fixed;
     z-index: 20;
@@ -1510,6 +1663,27 @@ h1 {
 
 @media (max-width: 420px) {
   .category {
+    display: none;
+  }
+
+  .calendar-cell {
+    min-height: 56px;
+    gap: 2px;
+  }
+
+  .calendar-cell-count {
+    display: none;
+  }
+
+  /* 窄屏下任务条退化为色条，保留可视密度 */
+  .calendar-chip {
+    font-size: 0;
+    height: 5px;
+    padding: 0;
+    border-radius: 2px;
+  }
+
+  .calendar-chip-more {
     display: none;
   }
 

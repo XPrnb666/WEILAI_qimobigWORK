@@ -113,6 +113,33 @@ function Avatar({
   )
 }
 
+// 分类配色：按分类名稳定映射到柔和色板，保证同一分类在日历条与详情里颜色一致
+const CATEGORY_PALETTE = [
+  { bg: "#e7f0eb", ink: "#2f6a4e" },
+  { bg: "#e6eef9", ink: "#2f5b8a" },
+  { bg: "#f9efdf", ink: "#8a5a2b" },
+  { bg: "#f0eaf8", ink: "#6a4a8a" },
+  { bg: "#fbe9e9", ink: "#8a3a3a" },
+  { bg: "#eef2e4", ink: "#4f6a2b" },
+]
+
+function categoryTone(name: string) {
+  let hash = 0
+  for (let i = 0; i < name.length; i += 1) {
+    hash = (hash * 31 + name.charCodeAt(i)) % 104729
+  }
+  return CATEGORY_PALETTE[hash % CATEGORY_PALETTE.length]
+}
+
+// 每个格子最多展示 3 条任务条，其余折叠成 +N
+const CHIP_LIMIT = 3
+const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+
+function weekdayLabel(ymd: string) {
+  const date = new Date(`${ymd}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? "" : WEEKDAY_LABELS[date.getDay()]
+}
+
 // 日历视图组件（内联，保持文件数量最少）
 function CalendarView({
   tasks,
@@ -183,6 +210,19 @@ function CalendarView({
   const selectedTasks = tasksByDate.get(selectedYMD) ?? []
   const today = todayYMD()
 
+  // 本月概览：总任务 / 已完成 / 完成率 / 有安排的天数
+  let monthTotal = 0
+  let monthDone = 0
+  let monthActiveDays = 0
+  for (const cell of grid) {
+    if (!cell.inMonth) continue
+    const dayTasks = tasksByDate.get(cell.ymd) ?? []
+    if (dayTasks.length > 0) monthActiveDays += 1
+    monthTotal += dayTasks.length
+    monthDone += dayTasks.filter((t) => t.completed).length
+  }
+  const monthRate = monthTotal > 0 ? Math.round((monthDone / monthTotal) * 100) : 0
+
   return (
     <div className="calendar-view">
       <div className="calendar-header">
@@ -192,6 +232,34 @@ function CalendarView({
           <button aria-label="下一月" className="calendar-nav-btn" onClick={() => navMonth(1)} type="button">›</button>
           <button aria-label="回到今天" className="calendar-today-btn" onClick={goToday} type="button">今天</button>
         </div>
+        <div aria-label="本月任务概览" className="calendar-summary">
+          <div className="calendar-summary-item">
+            <strong>{monthTotal}</strong>
+            <span>本月任务</span>
+          </div>
+          <div className="calendar-summary-item">
+            <strong>{monthDone}</strong>
+            <span>已完成</span>
+          </div>
+          <div className="calendar-summary-item">
+            <strong>{monthRate}%</strong>
+            <span>完成率</span>
+          </div>
+          <div className="calendar-summary-item">
+            <strong>{monthActiveDays}</strong>
+            <span>有安排天数</span>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-label={`本月完成率 ${monthRate}%`}
+        className="calendar-progress"
+        role="progressbar"
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={monthRate}
+      >
+        <span className="calendar-progress-fill" style={{ width: `${monthRate}%` }} />
       </div>
       <div className="calendar-weekdays">
         {["日","一","二","三","四","五","六"].map((w) => (
@@ -203,36 +271,80 @@ function CalendarView({
           const dayTasks = tasksByDate.get(cell.ymd) ?? []
           const isToday = cell.ymd === today
           const isSelected = cell.ymd === selectedYMD
+          const allDone =
+            dayTasks.length > 0 && dayTasks.every((t) => t.completed)
           const cls = [
             "calendar-cell",
             cell.inMonth ? "in-month" : "out-month",
             isToday ? "is-today" : "",
             isSelected ? "is-selected" : "",
+            allDone ? "is-done-day" : "",
           ].filter(Boolean).join(" ")
           return (
-            <button className={cls} key={cell.ymd} onClick={() => setSelectedYMD(cell.ymd)} type="button">
-              <span className="calendar-cell-day">{cell.day}</span>
-              {dayTasks.length > 0 && (
-                <span className="calendar-cell-dot" title={`${dayTasks.length} 个任务`}>
-                  {dayTasks.length}
-                </span>
-              )}
+            <button
+              className={cls}
+              key={cell.ymd}
+              onClick={() => setSelectedYMD(cell.ymd)}
+              title={`${cell.ymd} · ${dayTasks.length} 个任务`}
+              type="button"
+            >
+              <span className="calendar-cell-head">
+                <span className="calendar-cell-day">{cell.day}</span>
+                {dayTasks.length > 0 && (
+                  <span className="calendar-cell-count">{dayTasks.length}</span>
+                )}
+              </span>
+              <span className="calendar-cell-chips">
+                {dayTasks.slice(0, CHIP_LIMIT).map((t) => {
+                  const tone = categoryTone(t.category)
+                  return (
+                    <span
+                      className={t.completed ? "calendar-chip done" : "calendar-chip"}
+                      key={t.id}
+                      style={{ background: tone.bg, color: tone.ink }}
+                    >
+                      {t.title}
+                    </span>
+                  )
+                })}
+                {dayTasks.length > CHIP_LIMIT && (
+                  <span className="calendar-chip-more">
+                    +{dayTasks.length - CHIP_LIMIT}
+                  </span>
+                )}
+              </span>
             </button>
           )
         })}
       </div>
       <div className="calendar-selected-section">
-        <h3 className="calendar-selected-title">{selectedYMD} 的任务</h3>
+        <h3 className="calendar-selected-title">
+          {selectedYMD}（{weekdayLabel(selectedYMD)}）的任务
+          {selectedTasks.length > 0 && (
+            <span className="calendar-selected-count">
+              {selectedTasks.filter((t) => t.completed).length} / {selectedTasks.length} 已完成
+            </span>
+          )}
+        </h3>
         {selectedTasks.length === 0 ? (
-          <p className="calendar-empty">这一天没有待办 🎉</p>
+          <p className="calendar-empty">这一天没有待办</p>
         ) : (
           <ul className="calendar-task-list">
-            {selectedTasks.map((t) => (
-              <li key={t.id} className={t.completed ? "calendar-task done" : "calendar-task"}>
-                <span className="calendar-task-title">{t.title}</span>
-                <span className="calendar-task-cat">· {t.category}</span>
-              </li>
-            ))}
+            {selectedTasks.map((t) => {
+              const tone = categoryTone(t.category)
+              return (
+                <li key={t.id} className={t.completed ? "calendar-task done" : "calendar-task"}>
+                  <span className="calendar-task-dot" style={{ background: tone.ink }} />
+                  <span className="calendar-task-title">{t.title}</span>
+                  <span className="calendar-task-cat" style={{ background: tone.bg, color: tone.ink }}>
+                    {t.category}
+                  </span>
+                  <span className={t.completed ? "calendar-task-badge done" : "calendar-task-badge"}>
+                    {t.completed ? "已完成" : "待完成"}
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>
@@ -576,7 +688,7 @@ export default function App() {
     setEditingTask(task)
     setTitle(task.title)
     setCategory(task.category)
-    setDueDate(task.dueDate)
+    setDueDate(task.dueDate ?? "")
     setErrors({})
     setOpenMenuId(null)
   }
@@ -640,7 +752,7 @@ export default function App() {
     }
   }
 
-  const filters: { id: Filter label: string count: number }[] = [
+  const filters: { id: Filter; label: string; count: number }[] = [
     { id: "all", label: "全部", count: tasks.length },
     { id: "active", label: "待完成", count: activeCount },
     { id: "completed", label: "已完成", count: completedCount },
