@@ -1,7 +1,8 @@
 // Django 后端 API 封装
 // 所有请求自动带上 Token 头；401 时抛 AuthError 让上层处理登录跳转
 
-const API_BASE = "http://localhost:8000/api"
+// 默认指向本地 Django；部署或多环境时用 VITE_API_BASE 覆盖
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api"
 const TOKEN_KEY = "quicktask.token"
 
 export class AuthError extends Error {
