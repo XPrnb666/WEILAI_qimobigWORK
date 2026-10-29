@@ -30,6 +30,34 @@ function daysInMonth(y: number, m: number): number {
   return new Date(y, m + 1, 0).getDate()
 }
 
+// 上传前把图片等比压缩到 max 像素内，避免原图直传占用存储
+async function compressImage(file: File, max = 256): Promise<File> {
+  if (file.type === "image/gif") return file // 保留动图
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height))
+    if (scale === 1 && file.size <= 200 * 1024) {
+      bitmap.close()
+      return file
+    }
+    const canvas = document.createElement("canvas")
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return file
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.85),
+    )
+    if (!blob) return file
+    const name = file.name.replace(/\.(png|jpe?g|webp)$/i, "") + ".jpg"
+    return new File([blob], name, { type: "image/jpeg" })
+  } catch {
+    return file // 解码失败时退回原图，交给后端校验
+  }
+}
+
 // 头像组件：点击打开 file input；上传中禁用；支持清除
 function Avatar({
   user,
@@ -58,8 +86,15 @@ function Avatar({
       return
     }
     setUploading(true)
-    try { await onUpload(file) } catch (err) { alert(err instanceof Error ? err.message : "上传失败") }
-    finally { setUploading(false); setMenuOpen(false) }
+    try {
+      const compressed = await compressImage(file)
+      await onUpload(compressed)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "上传失败")
+    } finally {
+      setUploading(false)
+      setMenuOpen(false)
+    }
   }
 
   const initial = user.username.charAt(0).toUpperCase()
