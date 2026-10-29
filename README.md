@@ -111,6 +111,8 @@ QuickTask/
 │   ├── App.tsx                    主应用（登录 + 任务 CRUD + 乐观更新）
 │   ├── api.ts                     Django API 封装（authApi / taskApi）
 │   ├── main.tsx
+│   ├── CalendarView.tsx           日历视图组件（月网格 + 月度概览）
+│   ├── calendar-utils.ts          日期与分类配色工具函数
 │   └── index.css                  Tailwind v4 + 自定义样式
 ├── _bmad-output/                  BMAD 工作流产物
 │   ├── planning-artifacts/        产品简报、架构说明、PRD 等
